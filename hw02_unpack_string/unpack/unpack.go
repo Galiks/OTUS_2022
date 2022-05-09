@@ -17,31 +17,47 @@ func Unpack(text string) (string, error) {
 		slashRune  rune = 92
 		isSlash         = false
 	)
+	if len(text) == 0 {
+		return text, nil
+	}
+	if text[len(text)-1] == byte(slashRune) {
+		return "", ErrInvalidString
+	}
 	defer builder.Reset()
 	for _, char := range text {
-		if unicode.IsLetter(char) {
-			if lastLetter, err = unpackLetterHandler(lastLetter, builder, char); err != nil {
+		x := string(char)
+		strings.Split(x, "")
+		if isSlash {
+			lastLetter = string(char)
+			isSlash = false
+			continue
+		}
+		switch {
+		case unicode.IsDigit(char):
+			if err = unpackDigitHandler(lastLetter, char, builder); err != nil {
 				return "", err
 			}
-		} else if unicode.IsDigit(char) {
-			if lastLetter, err = unpackDigitHandler(lastLetter, char, builder); err != nil {
-				return "", err
-			}
-		} else if char == slashRune {
-			if lastLetter != "" {
-				if lastLetter, err = unpackDigitHandler(lastLetter, 49, builder); err != nil {
-					return "", err
+			lastLetter = ""
+		case char == slashRune:
+			{
+				if lastLetter != "" {
+					var oneRune rune = 49
+					if err = unpackDigitHandler(lastLetter, oneRune, builder); err != nil {
+						return "", err
+					}
+					lastLetter = ""
+				}
+				if !isSlash {
+					isSlash = true
+				} else if isSlash {
+					lastLetter += string(char)
+					isSlash = false
 				}
 			}
-			if !isSlash {
-				isSlash = true
-				continue
+		default:
+			if lastLetter, err = unpackLetterHandler(lastLetter, char, builder); err != nil {
+				return "", err
 			}
-			if isSlash {
-				lastLetter += string(char)
-				isSlash = false
-			}
-			// fmt.Printf("char: %s\n", string(char))
 		}
 	}
 	if lastLetter != "" {
@@ -52,32 +68,30 @@ func Unpack(text string) (string, error) {
 	return builder.String(), nil
 }
 
-func unpackDigitHandler(lastLetter string, char rune, builder *strings.Builder) (string, error) {
+func unpackDigitHandler(lastLetter string, char rune, builder *strings.Builder) error {
 	if lastLetter == "" {
-		return "", ErrInvalidString
+		return ErrInvalidString
 	}
 	digit, err := strconv.Atoi(string(char))
 	if err != nil {
-		return "", err
+		return err
 	}
 	if digit < 0 {
-		return "", ErrInvalidString
+		return ErrInvalidString
 	}
 
 	subString := strings.Repeat(lastLetter, digit)
 	if _, err := builder.WriteString(subString); err != nil {
-		return "", err
+		return err
 	}
-	lastLetter = ""
-	return lastLetter, nil
+	return nil
 }
 
-func unpackLetterHandler(lastLetter string, builder *strings.Builder, char rune) (string, error) {
+func unpackLetterHandler(lastLetter string, char rune, builder *strings.Builder) (string, error) {
 	if lastLetter != "" {
 		if _, err := builder.WriteString(lastLetter); err != nil {
 			return "", err
 		}
 	}
-	lastLetter = string(char)
-	return lastLetter, nil
+	return string(char), nil
 }
