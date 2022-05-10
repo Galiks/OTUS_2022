@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	var input string = `qe-3re-4f`
+	var input string
 
 	flag.StringVar(&input, "input", "", "input value")
 	flag.Parse()
