@@ -62,7 +62,7 @@ func Unpack(text string) (string, error) {
 	}
 	if lastLetter != "" {
 		if _, err := builder.WriteString(lastLetter); err != nil {
-			return "", nil
+			return "", err
 		}
 	}
 	return builder.String(), nil
