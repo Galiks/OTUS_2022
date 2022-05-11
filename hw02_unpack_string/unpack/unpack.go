@@ -9,6 +9,8 @@ import (
 
 var ErrInvalidString = errors.New("invalid string")
 
+// Unpack распаковывает строку
+// 	Пример: "a4bc2d5e" -> "aaaabccddddde"
 func Unpack(text string) (string, error) {
 	var (
 		builder    = new(strings.Builder)
@@ -25,8 +27,6 @@ func Unpack(text string) (string, error) {
 	}
 	defer builder.Reset()
 	for _, char := range text {
-		x := string(char)
-		strings.Split(x, "")
 		if isSlash {
 			lastLetter = string(char)
 			isSlash = false
