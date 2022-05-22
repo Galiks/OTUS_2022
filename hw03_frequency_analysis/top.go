@@ -52,7 +52,3 @@ func Top10(text string) []string {
 
 	return result
 }
-
-func RemoveElemFtomSlice[T any](slice []T, index int) []T {
-	return append(slice[:index], slice[index+1:]...)
-}
