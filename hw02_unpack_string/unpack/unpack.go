@@ -49,7 +49,7 @@ func Unpack(text string) (string, error) {
 				}
 				if !isSlash {
 					isSlash = true
-				} else if isSlash {
+				} else {
 					lastLetter += string(char)
 					isSlash = false
 				}
