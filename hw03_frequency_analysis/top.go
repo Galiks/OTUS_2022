@@ -11,21 +11,22 @@ type pair struct {
 }
 
 func Top10(text string) []string {
-
 	var (
-		result      []string         = make([]string, 0)
-		storage     map[string]int64 = make(map[string]int64)
-		pairStorage []*pair          = make([]*pair, 0)
-		topWord     int64            = 10
+		result            = make([]string, 0)
+		storage           = make(map[string]int64)
+		pairStorage       = make([]*pair, 0)
+		topWord     int64 = 10
 	)
 
 	words := strings.Fields(text)
+	if len(words) == 1 {
+		return []string{words[0]}
+	}
 	for _, word := range words {
 		if len(word) == 1 {
 			word = strings.ToLower(word)
 		}
-		storage[word] = storage[word] + 1
-
+		storage[word]++
 	}
 	for k, v := range storage {
 		pairStorage = append(pairStorage, &pair{
@@ -37,9 +38,8 @@ func Top10(text string) []string {
 	sort.Slice(pairStorage, func(i, j int) bool {
 		if pairStorage[i].Count == pairStorage[j].Count {
 			return pairStorage[i].Word < pairStorage[j].Word
-		} else {
-			return pairStorage[i].Count > pairStorage[j].Count
 		}
+		return pairStorage[i].Count > pairStorage[j].Count
 	})
 
 	if len(pairStorage) < 10 {
@@ -51,4 +51,8 @@ func Top10(text string) []string {
 	}
 
 	return result
+}
+
+func RemoveElemFtomSlice[T any](slice []T, index int) []T {
+	return append(slice[:index], slice[index+1:]...)
 }

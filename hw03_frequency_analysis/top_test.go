@@ -81,16 +81,23 @@ func TestTop10(t *testing.T) {
 	})
 }
 
-func TestSimple(t *testing.T) {
+func TestLength(t *testing.T) {
+	require.LessOrEqual(t, len(Top10(text)), 10)
+}
+
+func TestDublicate(t *testing.T) {
 	text := "cat and dog, one dog,two cats and one man"
-	expected := []string{
-		`and`,     //     (2)
-		`one`,     //     (2)
-		`cat`,     //     (1)
-		`cats`,    //   (1)
-		`dog,`,    //   (1)
-		`dog,two`, // (1)
-		`man`,     //   (1)
+	words := Top10(text)
+	for _, word := range words {
+		count := 0
+		word := word
+		t.Run(word, func(t *testing.T) {
+			for _, w := range words {
+				if w == word {
+					count++
+				}
+			}
+			require.Equal(t, count, 1)
+		})
 	}
-	require.Equal(t, expected, Top10(text))
 }
