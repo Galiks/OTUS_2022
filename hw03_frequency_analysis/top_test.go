@@ -1,6 +1,7 @@
 package hw03frequencyanalysis
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -100,4 +101,12 @@ func TestDublicate(t *testing.T) {
 			require.Equal(t, count, 1)
 		})
 	}
+}
+
+func TestSorting(t *testing.T) {
+	text := "cat and dog, one dog,two cats and one man"
+	input := Top10(text)
+	expected := input
+	sort.Strings(expected)
+	require.Equal(t, expected, input)
 }
