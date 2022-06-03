@@ -1,4 +1,4 @@
-package hw04lrucache
+package list
 
 import (
 	"testing"
@@ -13,6 +13,29 @@ func TestList(t *testing.T) {
 		require.Equal(t, 0, l.Len())
 		require.Nil(t, l.Front())
 		require.Nil(t, l.Back())
+	})
+
+	t.Run("different types", func(t *testing.T) {
+		l := NewList()
+
+		l.PushBack("Hello")
+		l.PushBack(",")
+		l.PushBack("World")
+		l.PushBack(123)
+		l.PushBack([]byte{77})
+
+		require.Equal(t, l.Print(), "Hello,World123[77]")
+	})
+
+	t.Run("print", func(t *testing.T) {
+		l := NewList()
+
+		l.PushFront(10) // [10]
+		l.PushBack(20)  // [10, 20]
+		l.PushBack(30)  // [10, 20, 30]
+
+		require.Equal(t, 3, l.Len())
+		require.NotEmpty(t, l.Print())
 	})
 
 	t.Run("complex", func(t *testing.T) {
