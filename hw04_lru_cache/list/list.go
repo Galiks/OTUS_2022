@@ -7,25 +7,25 @@ import (
 
 type List interface {
 	Len() int
-	Front() *ListItem
-	Back() *ListItem
-	PushFront(v interface{}) *ListItem
-	PushBack(v interface{}) *ListItem
-	Remove(i *ListItem)
-	MoveToFront(i *ListItem)
+	Front() *Item
+	Back() *Item
+	PushFront(v interface{}) *Item
+	PushBack(v interface{}) *Item
+	Remove(i *Item)
+	MoveToFront(i *Item)
 	Print() string
 }
 
-type ListItem struct {
+type Item struct {
 	Value interface{}
-	Next  *ListItem
-	Prev  *ListItem
+	Next  *Item
+	Prev  *Item
 }
 
 type list struct {
 	len   int
-	first *ListItem
-	last  *ListItem
+	first *Item
+	last  *Item
 }
 
 func NewList() List {
@@ -34,7 +34,7 @@ func NewList() List {
 
 func (l *list) Print() string {
 	var (
-		elem   *ListItem
+		elem   *Item
 		result = new(strings.Builder)
 	)
 	for i := 0; i < l.Len(); i++ {
@@ -53,16 +53,16 @@ func (l *list) Len() int {
 	return l.len
 }
 
-func (l *list) Front() *ListItem {
+func (l *list) Front() *Item {
 	return l.first
 }
 
-func (l *list) Back() *ListItem {
+func (l *list) Back() *Item {
 	return l.last
 }
 
-func (l *list) PushFront(v interface{}) *ListItem {
-	newItem := &ListItem{
+func (l *list) PushFront(v interface{}) *Item {
+	newItem := &Item{
 		Value: v,
 		Prev:  nil,
 	}
@@ -79,8 +79,8 @@ func (l *list) PushFront(v interface{}) *ListItem {
 	return newItem
 }
 
-func (l *list) PushBack(v interface{}) *ListItem {
-	newItem := &ListItem{
+func (l *list) PushBack(v interface{}) *Item {
+	newItem := &Item{
 		Value: v,
 		Next:  nil,
 	}
@@ -98,12 +98,17 @@ func (l *list) PushBack(v interface{}) *ListItem {
 	return newItem
 }
 
-func (l *list) Remove(i *ListItem) {
+func (l *list) Remove(i *Item) {
 	l.removeLink(i)
 	l.len--
 }
 
-func (l *list) removeLink(i *ListItem) {
+func (l *list) MoveToFront(i *Item) {
+	l.PushFront(i.Value)
+	l.removeLink(i)
+}
+
+func (l *list) removeLink(i *Item) {
 	next := i.Next
 	prev := i.Prev
 	if prev == nil {
@@ -117,9 +122,4 @@ func (l *list) removeLink(i *ListItem) {
 	} else {
 		next.Prev = prev
 	}
-}
-
-func (l *list) MoveToFront(i *ListItem) {
-	l.removeLink(i)
-	l.PushFront(i.Value)
 }

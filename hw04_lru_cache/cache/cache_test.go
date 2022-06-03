@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"fmt"
 	"math/rand"
 	"strconv"
 	"sync"
@@ -11,7 +12,8 @@ import (
 
 func TestCache(t *testing.T) {
 	t.Run("empty cache", func(t *testing.T) {
-		c := NewCache(10)
+		c, err := NewCache(10)
+		require.NoError(t, err)
 
 		_, ok := c.Get("aaa")
 		require.False(t, ok)
@@ -21,8 +23,8 @@ func TestCache(t *testing.T) {
 	})
 
 	t.Run("simple", func(t *testing.T) {
-		c := NewCache(5)
-
+		c, err := NewCache(5)
+		require.NoError(t, err)
 		wasInCache := c.Set("aaa", 100)
 		require.False(t, wasInCache)
 
@@ -50,14 +52,35 @@ func TestCache(t *testing.T) {
 	})
 
 	t.Run("purge logic", func(t *testing.T) {
-		// Write me
+		c, err := NewCache(5)
+		require.NoError(t, err)
+		require.NotNil(t, c)
+
+		for i := 0; i < 6; i++ {
+			c.Set(Key(fmt.Sprint(i)), i+1)
+		}
+
+		for i := 0; i < 6; i++ {
+			if i == 0 {
+				val, ok := c.Get(Key(fmt.Sprint(i)))
+				require.False(t, ok)
+				require.Nil(t, val)
+			} else {
+				val, ok := c.Get(Key(fmt.Sprint(i)))
+				require.True(t, ok)
+				require.NotNil(t, val)
+			}
+		}
+	})
+
+	t.Run("capacity error", func(t *testing.T) {
+		_, err := NewCache(0)
+		require.ErrorIs(t, err, ErrCapacity)
 	})
 }
 
 func TestCacheMultithreading(t *testing.T) {
-	t.Skip() // Remove me if task with asterisk completed.
-
-	c := NewCache(10)
+	c, _ := NewCache(10)
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
 
