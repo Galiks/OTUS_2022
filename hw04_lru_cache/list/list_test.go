@@ -38,6 +38,20 @@ func TestList(t *testing.T) {
 		require.NotEmpty(t, l.Print())
 	})
 
+	t.Run("length", func(t *testing.T) {
+		l := NewList()
+
+		first := l.PushFront(10) // [10]
+		second := l.PushBack(20) // [10, 20]
+		third := l.PushBack(30)  // [10, 20, 30]
+
+		l.MoveToFront(third)
+		l.MoveToFront(second)
+		l.MoveToFront(first)
+
+		require.Equal(t, l.Len(), 3)
+	})
+
 	t.Run("complex", func(t *testing.T) {
 		l := NewList()
 

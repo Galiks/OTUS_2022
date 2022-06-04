@@ -12,6 +12,7 @@ import (
 
 func TestCache(t *testing.T) {
 	t.Run("empty cache", func(t *testing.T) {
+		fmt.Printf("Test %q start\n", "empty cache")
 		c, err := NewCache(10)
 		require.NoError(t, err)
 
@@ -20,9 +21,11 @@ func TestCache(t *testing.T) {
 
 		_, ok = c.Get("bbb")
 		require.False(t, ok)
+		fmt.Printf("Test %q done\n", "empty cache")
 	})
 
 	t.Run("simple", func(t *testing.T) {
+		fmt.Printf("Test %q start\n", "simple")
 		c, err := NewCache(5)
 		require.NoError(t, err)
 		wasInCache := c.Set("aaa", 100)
@@ -49,15 +52,18 @@ func TestCache(t *testing.T) {
 		val, ok = c.Get("ccc")
 		require.False(t, ok)
 		require.Nil(t, val)
+		fmt.Printf("Test %q done\n", "simple")
 	})
 
-	t.Run("purge logic", func(t *testing.T) {
+	t.Run("purge logic (capacity)", func(t *testing.T) {
+		fmt.Printf("Test %q start\n", "purge logic (capacity)")
 		c, err := NewCache(5)
 		require.NoError(t, err)
 		require.NotNil(t, c)
 
 		for i := 0; i < 6; i++ {
-			c.Set(Key(fmt.Sprint(i)), i+1)
+			wasInCache := c.Set(Key(fmt.Sprint(i)), i+1)
+			require.False(t, wasInCache)
 		}
 
 		for i := 0; i < 6; i++ {
@@ -71,15 +77,58 @@ func TestCache(t *testing.T) {
 				require.NotNil(t, val)
 			}
 		}
+		fmt.Printf("Test %q done\n", "purge logic (capacity)")
+	})
+
+	t.Run("purge logic (timeout)", func(t *testing.T) {
+		fmt.Printf("Test %q start\n", "purge logic (timeout)")
+		c, err := NewCache(3)
+		require.NoError(t, err)
+		require.NotNil(t, c)
+
+		for i := 0; i < 3; i++ {
+			wasInCache := c.Set(Key(fmt.Sprint(i)), i+1)
+			require.False(t, wasInCache)
+		}
+
+		for i := 0; i < 5; i++ {
+			wasInCache := c.Set(Key(fmt.Sprint(1)), i)
+			require.True(t, wasInCache)
+			wasInCache = c.Set(Key(fmt.Sprint(2)), i)
+			require.True(t, wasInCache)
+		}
+
+		wasInCache := c.Set(Key(fmt.Sprint(3)), 4)
+		require.False(t, wasInCache)
+
+		val, ok := c.Get(Key(fmt.Sprint(1)))
+		require.True(t, ok)
+		require.NotNil(t, val)
+
+		val, ok = c.Get(Key(fmt.Sprint(2)))
+		require.True(t, ok)
+		require.NotNil(t, val)
+
+		val, ok = c.Get(Key(fmt.Sprint(3)))
+		require.True(t, ok)
+		require.NotNil(t, val)
+
+		val, ok = c.Get(Key(fmt.Sprint(0)))
+		require.False(t, ok)
+		require.Nil(t, val)
+		fmt.Printf("Test %q done\n", "purge logic (timeout)")
 	})
 
 	t.Run("capacity error", func(t *testing.T) {
+		fmt.Printf("Test %q start\n", "capacity error")
 		_, err := NewCache(0)
 		require.ErrorIs(t, err, ErrCapacity)
+		fmt.Printf("Test %q done\n", "capacity error")
 	})
 }
 
 func TestCacheMultithreading(t *testing.T) {
+	fmt.Printf("Test %q start\n", "Cache Multithreading")
 	c, _ := NewCache(10)
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
@@ -99,4 +148,5 @@ func TestCacheMultithreading(t *testing.T) {
 	}()
 
 	wg.Wait()
+	fmt.Printf("Test %q done\n", "Cache Multithreading")
 }

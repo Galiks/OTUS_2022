@@ -21,7 +21,7 @@ type lruCache struct {
 	capacity int
 	queue    list.List
 	items    map[Key]*list.Item
-	lock     sync.RWMutex
+	lock     sync.Mutex
 }
 
 type cacheItem struct {
@@ -62,8 +62,8 @@ func (c *lruCache) Set(key Key, value interface{}) bool {
 }
 
 func (c *lruCache) Get(key Key) (interface{}, bool) {
-	c.lock.RLock()
-	defer c.lock.RUnlock()
+	c.lock.Lock()
+	defer c.lock.Unlock()
 	elem, ok := c.items[key]
 	if !ok {
 		return nil, ok

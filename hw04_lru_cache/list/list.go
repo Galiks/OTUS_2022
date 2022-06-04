@@ -100,7 +100,6 @@ func (l *list) PushBack(v interface{}) *Item {
 
 func (l *list) Remove(i *Item) {
 	l.removeLink(i)
-	l.len--
 }
 
 func (l *list) MoveToFront(i *Item) {
@@ -122,4 +121,5 @@ func (l *list) removeLink(i *Item) {
 	} else {
 		next.Prev = prev
 	}
+	l.len--
 }
