@@ -2,10 +2,14 @@ package hw05parallelexecution
 
 import (
 	"errors"
+	"fmt"
 	"sync"
 )
 
 var ErrErrorsLimitExceeded = errors.New("errors limit exceeded")
+
+var errorCount int
+var mu sync.Mutex
 
 type Task func() error
 
@@ -15,25 +19,30 @@ func Run(tasks []Task, n, m int) error {
 		return ErrErrorsLimitExceeded
 	}
 	var (
-		taskChan  chan Task  = make(chan Task, n)
-		errorChan chan error = make(chan error, m)
+		taskChan = make(chan Task, n)
+		// errorChan = make(chan error, m)
 		wg        sync.WaitGroup
-		globalErr error = nil
+		globalErr error
 	)
+	// go func() {
+	// 	var errorCount int
 
-	go func() {
-		var errorCount int64 = 0
-		for {
-			if _, ok := <-errorChan; ok {
-				errorCount++
-			}
-			if errorCount >= int64(m) {
-				close(errorChan)
-				return
-			}
-		}
-	}()
-
+	// 	for {
+	// 		select {
+	// 		case _, ok := <-errorChan:
+	// 			if ok {
+	// 				errorCount++
+	// 			} else {
+	// 				return
+	// 			}
+	// 		default:
+	// 			if errorCount >= m {
+	// 				globalErr = ErrErrorsLimitExceeded
+	// 				return
+	// 			}
+	// 		}
+	// 	}
+	// }()
 	go func() {
 		defer close(taskChan)
 		for _, task := range tasks {
@@ -43,26 +52,28 @@ func Run(tasks []Task, n, m int) error {
 
 	for i := 0; i < n; i++ {
 		wg.Add(1)
-		go func() {
-			handler(taskChan, errorChan, &globalErr)
-			wg.Done()
-		}()
+		go handler(taskChan, &globalErr, m, &wg)
 	}
 
 	wg.Wait()
-
 	return globalErr
 }
 
-func handler(taskChan chan Task, errorChan chan error, globalErr *error) {
-	if *globalErr != nil {
-		return
-	}
+func handler(taskChan chan Task, globalErr *error, maxErrorCount int, wg *sync.WaitGroup) {
+	defer wg.Done()
+	defer fmt.Println("DONE")
 	for task := range taskChan {
+		if *globalErr != nil {
+			return
+		}
 		if err := task(); err != nil {
-			if _, ok := <-errorChan; ok {
-				errorChan <- err
-			}
+			mu.Lock()
+			errorCount++
+			mu.Unlock()
+		}
+		if errorCount == maxErrorCount {
+			*globalErr = ErrErrorsLimitExceeded
+			return
 		}
 	}
 }
