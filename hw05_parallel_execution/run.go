@@ -28,6 +28,7 @@ func Run(tasks []Task, n, m int) error {
 		wg        sync.WaitGroup
 		// Или лучше использовать канал?
 		globalErr error
+		mu        sync.Mutex
 	)
 	defer close(errorChan)
 	go func() {
@@ -39,24 +40,28 @@ func Run(tasks []Task, n, m int) error {
 
 	for i := 0; i < n; i++ {
 		wg.Add(1)
-		go handler(taskChan, errorChan, &globalErr, m, &wg)
+		go handler(taskChan, errorChan, &globalErr, m, &wg, &mu)
 	}
 
 	wg.Wait()
 	return globalErr
 }
 
-func handler(taskChan chan Task, errorChan chan<- error, globalErr *error, maxErrorCount int, wg *sync.WaitGroup) {
+func handler(taskChan chan Task, errorChan chan<- error, globalErr *error, maxErrorCount int, wg *sync.WaitGroup, mu *sync.Mutex) {
 	defer wg.Done()
 	for task := range taskChan {
+		mu.Lock()
 		if *globalErr != nil {
 			return
 		}
+		mu.Unlock()
 		if err := task(); err != nil {
 			errorChan <- err
 		}
 		if len(errorChan) >= maxErrorCount {
+			mu.Lock()
 			*globalErr = ErrErrorsLimitExceeded
+			mu.Unlock()
 			return
 		}
 	}
