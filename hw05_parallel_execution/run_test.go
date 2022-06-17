@@ -66,7 +66,7 @@ func TestRun(t *testing.T) {
 
 	for _, tc := range tests {
 		tc := tc
-		t.Run("max error count error", func(t *testing.T) {
+		t.Run("workers count error", func(t *testing.T) {
 			err := Run(tc.task, tc.workersCount, tc.maxErrorsCount)
 			require.Truef(t, errors.Is(err, ErrNegativeGoroutineNumber), "actual err - %v", err)
 		})
