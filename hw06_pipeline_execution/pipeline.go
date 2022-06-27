@@ -16,16 +16,10 @@ func ExecutePipeline(in In, done In, stages ...Stage) Out {
 			select {
 			case <-done:
 				return
-			// case <-test:
-			// 	go func() {
-			// 		s := s
-			// 		in = s(in)
-			// 		test <- struct{}{}
-			// 	}()
 			default:
+				s := s
+				in = s(in)
 			}
-			s := s
-			in = s(in)
 		}
 		go func() {
 			defer close(out)
