@@ -90,4 +90,54 @@ func TestPipeline(t *testing.T) {
 		require.Len(t, result, 0)
 		require.Less(t, int64(elapsed), int64(abortDur)+int64(fault))
 	})
+
+	// На самом деле не ясно что должно быть в таком случае - continue или break?
+	t.Run("stages is nil", func(t *testing.T) {
+		in := make(Bi)
+		data := []int{1, 2, 3, 4, 5}
+
+		go func() {
+			for _, v := range data {
+				in <- v
+			}
+			close(in)
+		}()
+
+		result := make([]int, 0, 10)
+		start := time.Now()
+		var firstFunc Stage = nil
+		secondFunc := g("Dummy", func(v interface{}) interface{} { return v })
+		for s := range ExecutePipeline(in, nil, firstFunc, secondFunc) {
+			result = append(result, s.(int))
+		}
+		elapsed := time.Since(start)
+
+		require.Equal(t, data, result)
+		require.Less(t,
+			int64(elapsed),
+			int64(sleepPerStage)*int64(len(stages)+len(data)-1)+int64(fault))
+	})
+
+	t.Run("stages is empty", func(t *testing.T) {
+		in := make(Bi)
+		data := []int{1, 2, 3, 4, 5}
+
+		go func() {
+			for _, v := range data {
+				in <- v
+			}
+			close(in)
+		}()
+
+		result := make([]int, 0, 5)
+		start := time.Now()
+		for s := range ExecutePipeline(in, nil, []Stage{}...) {
+			result = append(result, s.(int))
+		}
+		elapsed := time.Since(start)
+		require.Equal(t, data, result)
+		require.Less(t,
+			int64(elapsed),
+			int64(sleepPerStage)*int64(len(stages)+len(data)-1)+int64(fault))
+	})
 }

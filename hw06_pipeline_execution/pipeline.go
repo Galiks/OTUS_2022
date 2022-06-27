@@ -10,6 +10,10 @@ type Stage func(in In) (out Out)
 
 func ExecutePipeline(in In, done In, stages ...Stage) Out {
 	for _, s := range stages {
+		if s == nil {
+			// continue - see pipeline_test.go:94
+			break
+		}
 		stageChan := make(Bi)
 		go func(out In, stageResultChan Bi) {
 			defer close(stageResultChan)
