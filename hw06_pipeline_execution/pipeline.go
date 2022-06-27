@@ -10,10 +10,10 @@ type Stage func(in In) (out Out)
 
 func ExecutePipeline(in In, done In, stages ...Stage) Out {
 	out := make(Bi)
-	temp := in
 	go func() {
 		for _, s := range stages {
-			temp = s(temp)
+			s := s
+			in = s(in)
 		}
 		go func() {
 			defer close(out)
@@ -21,7 +21,7 @@ func ExecutePipeline(in In, done In, stages ...Stage) Out {
 				select {
 				case <-done:
 					return
-				case out <- <-temp:
+				case out <- <-in:
 					continue
 				default:
 					return
