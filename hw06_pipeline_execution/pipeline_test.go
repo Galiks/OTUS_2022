@@ -105,9 +105,8 @@ func TestPipeline(t *testing.T) {
 
 		result := make([]int, 0, 10)
 		start := time.Now()
-		var firstFunc Stage = nil
 		secondFunc := g("Dummy", func(v interface{}) interface{} { return v })
-		for s := range ExecutePipeline(in, nil, firstFunc, secondFunc) {
+		for s := range ExecutePipeline(in, nil, nil, secondFunc) {
 			result = append(result, s.(int))
 		}
 		elapsed := time.Since(start)
