@@ -15,22 +15,31 @@ func ExecutePipeline(in In, done In, stages ...Stage) Out {
 			// continue - see pipeline_test.go:94
 			break
 		}
-		stageChan := make(Bi)
-		go func(out In, stageResultChan Bi) {
-			defer close(stageResultChan)
-			for {
+		out = newFunction(done, s(out))
+	}
+	return out
+}
+
+func newFunction(done, out In) Out {
+	stageChan := make(Bi)
+	go func(out In, stageResultChan Bi) {
+		defer close(stageResultChan)
+		for {
+			select {
+			case <-done:
+				return
+			case item, ok := <-out:
+				if !ok {
+					return
+				}
 				select {
 				case <-done:
 					return
-				case item, ok := <-out:
-					if !ok {
-						return
-					}
-					stageResultChan <- item
+				case stageResultChan <- item:
 				}
+
 			}
-		}(out, stageChan)
-		out = s(stageChan)
-	}
-	return out
+		}
+	}(out, stageChan)
+	return stageChan
 }
