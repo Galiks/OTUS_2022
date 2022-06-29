@@ -37,7 +37,6 @@ func newFunction(done, out In) Out {
 					return
 				case stageResultChan <- item:
 				}
-
 			}
 		}
 	}(out, stageChan)
