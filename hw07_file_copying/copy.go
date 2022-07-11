@@ -24,6 +24,9 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	}
 	sourceInfo, err := os.Stat(fromPath)
 	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return ErrSourceFileNotFound
+		}
 		return err
 	}
 	if sourceInfo.Size() == 0 || !sourceInfo.Mode().IsRegular() {
@@ -69,7 +72,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 		bytesLimit = limit
 	}
 
-	bar := pb.Full.Start64(bytesLimit)
+	bar := pb.Full.Start64(bytesLimit - offset)
 	defer bar.Finish()
 	reader := io.LimitReader(source, bytesLimit)
 	barReader := bar.NewProxyReader(reader)
