@@ -84,9 +84,5 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 		return err
 	}
 
-	if err = bar.Err(); err != nil {
-		return err
-	}
-
-	return nil
+	return bar.Err()
 }
