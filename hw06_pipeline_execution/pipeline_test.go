@@ -91,7 +91,6 @@ func TestPipeline(t *testing.T) {
 		require.Less(t, int64(elapsed), int64(abortDur)+int64(fault))
 	})
 
-	// На самом деле не ясно что должно быть в таком случае - continue или break?
 	t.Run("stages is nil", func(t *testing.T) {
 		in := make(Bi)
 		data := []int{1, 2, 3, 4, 5}

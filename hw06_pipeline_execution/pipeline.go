@@ -12,23 +12,22 @@ func ExecutePipeline(in In, done In, stages ...Stage) Out {
 	out := in
 	for _, s := range stages {
 		if s == nil {
-			// continue - see pipeline_test.go:94
-			break
+			continue
 		}
 		out = stageHandler(done, s(out))
 	}
 	return out
 }
 
-func stageHandler(done, out In) Out {
+func stageHandler(done, data In) Out {
 	stageChan := make(Bi)
-	go func(out In, stageResultChan Bi) {
+	go func(data In, stageResultChan Bi) {
 		defer close(stageResultChan)
 		for {
 			select {
 			case <-done:
 				return
-			case item, ok := <-out:
+			case item, ok := <-data:
 				if !ok {
 					return
 				}
@@ -39,6 +38,6 @@ func stageHandler(done, out In) Out {
 				}
 			}
 		}
-	}(out, stageChan)
+	}(data, stageChan)
 	return stageChan
 }
