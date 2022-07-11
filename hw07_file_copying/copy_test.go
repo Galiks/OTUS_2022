@@ -70,13 +70,13 @@ func TestCopy(t *testing.T) {
 	})
 
 	t.Run("test on error `ErrSourceFileNotFound`", func(t *testing.T) {
-		var notExistedFile string = ""
+		var notExistedFile string
 		err = Copy(notExistedFile, destinationPath, 0, 0)
 		require.ErrorIs(t, err, ErrSourceFileNotFound)
 	})
 
 	t.Run("test on error `ErrDestinationFileNotFound`", func(t *testing.T) {
-		var notExistedFile string = ""
+		var notExistedFile string
 		err = Copy(sourcePath, notExistedFile, 0, 0)
 		require.ErrorIs(t, err, ErrDestinationFileNotFound)
 	})
@@ -100,7 +100,7 @@ func TestCopy(t *testing.T) {
 	})
 
 	t.Run("test on error `ErrUnsupportedFile`", func(t *testing.T) {
-		var newSourceFile string = "source_test.qwe"
+		newSourceFile := "source_test.qwe"
 		file, err := os.Create(newSourceFile)
 		require.Nil(t, err)
 		err = Copy(newSourceFile, destinationPath, 0, 0)
@@ -118,5 +118,4 @@ func TestCopy(t *testing.T) {
 		err = Copy(sourcePath, destinationPath, ss.Size()+fileOffset, 0)
 		require.ErrorIs(t, err, ErrOffsetExceedsFileSize)
 	})
-
 }

@@ -38,7 +38,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	if sourceInfo.Size() == offset {
 		return ErrTryCopyNothing
 	}
-	source, err := os.OpenFile(fromPath, os.O_RDONLY, 0644)
+	source, err := os.OpenFile(fromPath, os.O_RDONLY, 0o644)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return ErrSourceFileNotFound
@@ -52,7 +52,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 			return err
 		}
 	}
-	destination, err := os.OpenFile(toPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	destination, err := os.OpenFile(toPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)
 	if err != nil {
 		return ErrDestinationFileNotFound
 	}
