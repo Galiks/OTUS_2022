@@ -65,7 +65,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 		}
 	}
 
-	var bytesLimit int64 = limit
+	bytesLimit := limit
 	if limit == 0 {
 		bytesLimit = sourceInfo.Size()
 	}
