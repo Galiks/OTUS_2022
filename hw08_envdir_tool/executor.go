@@ -1,13 +1,21 @@
 package main
 
 import (
+	"errors"
 	"io"
+	"log"
 	"os"
 	"os/exec"
 )
 
+var ErrEmptyCmd = errors.New("commands is empty")
+
 // RunCmd runs a command + arguments (cmd) with environment variables from env.
 func RunCmd(cmd []string, env Environment) (returnCode int) {
+	if len(cmd) == 0 {
+		log.Println(ErrEmptyCmd)
+		return 1
+	}
 	for eVar, eVal := range env {
 		if eVal.NeedRemove {
 			os.Unsetenv(eVar)
@@ -15,12 +23,15 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 		}
 		os.Setenv(eVar, eVal.Value)
 	}
-	proc := exec.Command(cmd[0], cmd[1:]...)
+	commandName := cmd[0]
+	args := cmd[1:]
+	proc := exec.Command(commandName, args...)
 	setSTD(proc, os.Stdout, os.Stderr, os.Stdin)
 
 	if err := proc.Run(); err != nil {
-		if exitError, ok := err.(*exec.ExitError); ok {
-			return exitError.ExitCode()
+		errExitCode := &exec.ExitError{}
+		if errors.As(err, &errExitCode) {
+			return errExitCode.ExitCode()
 		}
 	}
 

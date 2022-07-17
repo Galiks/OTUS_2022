@@ -6,9 +6,7 @@ import (
 	"os"
 )
 
-var (
-	ErrCountArgs = errors.New("error count args")
-)
+var ErrCountArgs = errors.New("error count args")
 
 func main() {
 	if len(os.Args) < 3 {
