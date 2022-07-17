@@ -13,6 +13,12 @@ import (
 
 type Environment map[string]EnvValue
 
+func (env Environment) Clear() {
+	for k := range env {
+		delete(env, k)
+	}
+}
+
 // EnvValue helps to distinguish between empty files and files with the first empty line.
 type EnvValue struct {
 	Value      string

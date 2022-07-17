@@ -33,6 +33,7 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 		if errors.As(err, &errExitCode) {
 			return errExitCode.ExitCode()
 		}
+		return 1
 	}
 
 	return
