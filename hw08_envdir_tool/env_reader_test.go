@@ -24,4 +24,27 @@ func TestReadDir(t *testing.T) {
 		require.NotNil(t, err)
 		require.Nil(t, env)
 	})
+
+	t.Run("invalid symbol", func(t *testing.T) {
+		dir, err := os.Getwd()
+		require.Nil(t, err)
+		pathTemp, err := os.MkdirTemp(dir, "test_invalid_symbol")
+		require.Nil(t, err)
+		tempFileName := "INVALID=FILE"
+		expectedEnvLen := 0
+		file, err := os.CreateTemp(pathTemp, tempFileName)
+		require.Nil(t, err)
+		f, err := os.Stat(file.Name())
+		require.Nil(t, err)
+		require.Contains(t, f.Name(), tempFileName)
+		env, err := ReadDir(pathTemp)
+		require.Nil(t, err)
+		require.Equal(t, expectedEnvLen, len(env))
+		err = file.Close()
+		require.Nil(t, err)
+		err = os.Remove(file.Name())
+		require.Nil(t, err)
+		err = os.RemoveAll(pathTemp)
+		require.Nil(t, err)
+	})
 }
