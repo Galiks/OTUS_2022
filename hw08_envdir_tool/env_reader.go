@@ -5,10 +5,14 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"io/ioutil"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
+)
+
+const (
+	invalidSymbol string = "="
 )
 
 type Environment map[string]EnvValue
@@ -28,30 +32,20 @@ type EnvValue struct {
 // ReadDir reads a specified directory and returns map of env variables.
 // Variables represented as files where filename is name of variable, file first line is a value.
 func ReadDir(dir string) (Environment, error) {
-	invalidSymbol := "="
 	environments := make(Environment)
 
-	dirEntry, err := ioutil.ReadDir(dir)
+	dirEntry, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, de := range dirEntry {
-		if de.IsDir() || !de.Mode().IsRegular() || strings.Contains(de.Name(), invalidSymbol) {
+		if de.IsDir() || !de.Type().IsRegular() || strings.Contains(de.Name(), invalidSymbol) {
 			continue
 		}
-		f, err := os.OpenFile(filepath.Join(dir, de.Name()), os.O_RDONLY, 0o644)
+		line, err := readLine(dir, de)
 		if err != nil {
 			return nil, err
-		}
-		defer f.Close()
-
-		reader := bufio.NewReader(f)
-		line, _, err := reader.ReadLine()
-		if err != nil {
-			if !errors.Is(err, io.EOF) {
-				return nil, err
-			}
 		}
 		firstLine := strings.TrimRight(string(bytes.ReplaceAll(line, []byte{0x00}, []byte{'\n'})), "\t ")
 
@@ -66,4 +60,21 @@ func ReadDir(dir string) (Environment, error) {
 	}
 
 	return environments, nil
+}
+
+func readLine(dir string, de fs.DirEntry) ([]byte, error) {
+	f, err := os.OpenFile(filepath.Join(dir, de.Name()), os.O_RDONLY, 0o644)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	reader := bufio.NewReader(f)
+	line, _, err := reader.ReadLine()
+	if err != nil {
+		if !errors.Is(err, io.EOF) {
+			return nil, err
+		}
+	}
+	return line, nil
 }
