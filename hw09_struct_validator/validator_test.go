@@ -42,6 +42,7 @@ type (
 	}
 )
 
+// TestValidate проверка работоспособности.
 func TestValidate(t *testing.T) {
 	tests := []struct {
 		in          interface{}
@@ -119,10 +120,10 @@ func TestValidate(t *testing.T) {
 			for _, error := range strings.Split(tt.expectedErr.Error(), "\n") {
 				require.ErrorContains(t, err, error)
 			}
-
 		})
 	}
 }
+
 func TestErrors(t *testing.T) {
 	t.Run("error ErrInterfaceType", func(t *testing.T) {
 		err := Validate("")
@@ -213,6 +214,6 @@ func TestErrors(t *testing.T) {
 		err := Validate(testStruct)
 		var valErr ValidationErrors
 		require.ErrorAs(t, err, &valErr)
-		require.ErrorContains(t, valErr, ErrNumberMin.Error())
+		require.ErrorContains(t, valErr, ErrNumberIn.Error())
 	})
 }

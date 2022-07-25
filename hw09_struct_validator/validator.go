@@ -60,8 +60,8 @@ func (v ValidationErrors) Error() string {
 
 func Validate(v interface{}) error {
 	var (
-		validateTagName                   = "validate"
-		validationErrors ValidationErrors = nil
+		validateTagName  = "validate"
+		validationErrors ValidationErrors
 		wg               sync.WaitGroup
 		lock             sync.Mutex
 	)
@@ -91,7 +91,7 @@ func Validate(v interface{}) error {
 					validationErrors = errHandler(err, validationErrors, field.Name)
 					lock.Unlock()
 				}
-			case reflect.Int:
+			case reflect.Int64, reflect.Int32, reflect.Int16, reflect.Int8, reflect.Int:
 				fieldVal := val.Field(i).Int()
 				if err := validateHandler(fieldVal, tag, field.Name, validateNumber); err != nil {
 					lock.Lock()
@@ -111,6 +111,8 @@ func Validate(v interface{}) error {
 				lock.Lock()
 				validationErrors = errHandler(err, validationErrors, field.Name)
 				lock.Unlock()
+			default:
+				return
 			}
 		}()
 	}
@@ -118,7 +120,6 @@ func Validate(v interface{}) error {
 	return validationErrors
 }
 
-// личная моля болячка. Не люблю повторение функционала
 func errHandler(err error, validationErrors ValidationErrors, fieldName string) ValidationErrors {
 	var valErr ValidationErrors
 	if errors.As(err, &valErr) {
@@ -246,7 +247,7 @@ func validateNumber(key, value, fieldName string, field interface{}) error {
 			})
 			return errors
 		}
-		if int64(number) < min {
+		if number < min {
 			errors = append(errors, ValidationError{
 				Field: fieldName,
 				Err:   ErrNumberMin,
@@ -278,7 +279,6 @@ func validateSlice(key, value, fieldName string, field interface{}) error {
 					Err:   err,
 				})
 			}
-
 		}
 	case []string:
 		for _, elem := range field {
@@ -292,7 +292,6 @@ func validateSlice(key, value, fieldName string, field interface{}) error {
 					Err:   err,
 				})
 			}
-
 		}
 	default:
 		validateErrors = append(validateErrors, ValidationError{
@@ -308,7 +307,7 @@ func validateSlice(key, value, fieldName string, field interface{}) error {
 // 	Пример: len:32
 // 	key = len, value = 32
 func getValidationPair(cond string) (string, string, error) {
-	var keyValueSeparator = ":"
+	keyValueSeparator := ":"
 	splitCond := strings.Split(cond, keyValueSeparator)
 	if len(splitCond) == 1 {
 		return "", "", ErrInvalidEmptyTag
