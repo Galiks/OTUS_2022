@@ -2,6 +2,9 @@ package main
 
 import (
 	"flag"
+	"log"
+	"os"
+	"path/filepath"
 )
 
 var (
@@ -18,5 +21,11 @@ func init() {
 
 func main() {
 	flag.Parse()
-	// Place your code here.
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := Copy(filepath.Join(dir, from), filepath.Join(dir, to), offset, limit); err != nil {
+		log.Fatal(err)
+	}
 }
