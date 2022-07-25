@@ -111,6 +111,10 @@ func Validate(v interface{}) error {
 				lock.Lock()
 				validationErrors = errHandler(err, validationErrors, field.Name)
 				lock.Unlock()
+			case reflect.Array, reflect.Bool, reflect.Chan, reflect.Complex128, reflect.Complex64,
+				reflect.Float32, reflect.Float64, reflect.Func, reflect.Interface, reflect.Invalid,
+				reflect.Map, reflect.Pointer, reflect.Uint, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+				reflect.Uint8, reflect.Uintptr, reflect.UnsafePointer:
 			default:
 				return
 			}
