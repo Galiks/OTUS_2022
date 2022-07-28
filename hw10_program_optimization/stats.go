@@ -39,9 +39,7 @@ func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
 		return nil, ErrDomainIsEmpty
 	}
 
-	var (
-		result = make(DomainStat)
-	)
+	result := make(DomainStat)
 	reg, err := regexp.Compile("\\." + domain)
 	if err != nil {
 		return nil, err
