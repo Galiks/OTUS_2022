@@ -3,6 +3,7 @@ package hw10programoptimization
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -10,6 +11,11 @@ import (
 	"strings"
 
 	"github.com/buger/jsonparser"
+)
+
+var (
+	ErrReaderIsNil   = errors.New("reader is nil")
+	ErrDomainIsEmpty = errors.New("domain is empty")
 )
 
 type User struct {
@@ -25,6 +31,14 @@ type User struct {
 type DomainStat map[string]int
 
 func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
+	if r == nil {
+		return nil, ErrReaderIsNil
+	}
+
+	if domain == "" {
+		return nil, ErrDomainIsEmpty
+	}
+
 	var (
 		result = make(DomainStat)
 	)

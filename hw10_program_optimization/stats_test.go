@@ -39,6 +39,18 @@ func TestGetDomainStat(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, DomainStat{}, result)
 	})
+
+	t.Run("test on `ErrReaderIsNil`", func(t *testing.T) {
+		result, err := GetDomainStat(nil, "test")
+		require.ErrorIs(t, err, ErrReaderIsNil)
+		require.Nil(t, result)
+	})
+
+	t.Run("test on `ErrDomainIsEmpty`", func(t *testing.T) {
+		result, err := GetDomainStat(bytes.NewBufferString(data), "")
+		require.ErrorIs(t, err, ErrDomainIsEmpty)
+		require.Nil(t, result)
+	})
 }
 
 var isOld = false
