@@ -5,7 +5,7 @@
 		"encoding/json"
 		"errors"
 		"fmt"
-		"github.com/buger/jsonparser"
+		"github.com/valyala/fastjson"
 		"io"
 		"io/ioutil"
 		"regexp"
@@ -48,10 +48,7 @@
 				}
 				return nil, err
 			}
-			email, err := jsonparser.GetUnsafeString(line, "Email")
-			if err != nil {
-				return nil, err
-			}
+			email := fastjson.GetString(line, "Email")
 			if strings.HasSuffix(email, domain) {
 				emailDomain := email[strings.IndexRune(email, '@')+1:]
 				stats[strings.ToLower(emailDomain)]++
