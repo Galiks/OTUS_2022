@@ -5,17 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/buger/jsonparser"
 	"io"
 	"io/ioutil"
 	"regexp"
 	"strings"
-
-	"github.com/buger/jsonparser"
-)
-
-var (
-	ErrReaderIsNil   = errors.New("reader is nil")
-	ErrDomainIsEmpty = errors.New("domain is empty")
 )
 
 type User struct {
@@ -28,6 +22,11 @@ type User struct {
 	Address  string
 }
 
+var (
+	ErrReaderIsNil   = errors.New("reader is nil")
+	ErrDomainIsEmpty = errors.New("domain is empty")
+)
+
 type DomainStat map[string]int
 
 func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
@@ -38,28 +37,27 @@ func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
 	if domain == "" {
 		return nil, ErrDomainIsEmpty
 	}
+	bf := bufio.NewReader(r)
+	stats := make(DomainStat)
 
-	result := make(DomainStat)
-	reg, err := regexp.Compile("\\." + domain)
-	if err != nil {
-		return nil, err
-	}
-
-	scanner := bufio.NewScanner(r)
-	for scanner.Scan() {
-		email, err := jsonparser.GetUnsafeString(scanner.Bytes(), "Email")
+	for {
+		line, _, err := bf.ReadLine()
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			return nil, err
+		}
+		email, err := jsonparser.GetUnsafeString(line, "Email")
 		if err != nil {
 			return nil, err
 		}
-		if matched := reg.MatchString(email); matched {
-			result[strings.ToLower(strings.SplitN(email, "@", 2)[1])]++
+		if strings.HasSuffix(email, domain) {
+			emailDomain := email[strings.IndexRune(email, '@')+1:]
+			stats[emailDomain]++
 		}
 	}
-	if err := scanner.Err(); err != nil {
-		return nil, err
-	}
-
-	return result, nil
+	return stats, nil
 }
 
 func GetDomainStatOld(r io.Reader, domain string) (DomainStat, error) {
