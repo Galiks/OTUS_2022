@@ -3,7 +3,7 @@ module github.com/Galiks/OTUS_2022/hw10_program_optimization
 go 1.18
 
 require (
-	github.com/buger/jsonparser v1.1.1
+	github.com/valyala/fastjson v1.6.3
 	github.com/stretchr/testify v1.8.0
 )
 
