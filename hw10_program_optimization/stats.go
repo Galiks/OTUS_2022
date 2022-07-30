@@ -1,12 +1,16 @@
 package hw10programoptimization
 
 import (
+	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"regexp"
 	"strings"
+
+	"github.com/buger/jsonparser"
 )
 
 type User struct {
@@ -19,9 +23,45 @@ type User struct {
 	Address  string
 }
 
+var (
+	ErrReaderIsNil   = errors.New("reader is nil")
+	ErrDomainIsEmpty = errors.New("domain is empty")
+)
+
 type DomainStat map[string]int
 
 func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
+	if r == nil {
+		return nil, ErrReaderIsNil
+	}
+
+	if domain == "" {
+		return nil, ErrDomainIsEmpty
+	}
+	bf := bufio.NewReader(r)
+	stats := make(DomainStat)
+
+	for {
+		line, _, err := bf.ReadLine()
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			return nil, err
+		}
+		email, err := jsonparser.GetUnsafeString(line, "Email")
+		if err != nil {
+			return nil, err
+		}
+		if strings.HasSuffix(email, domain) {
+			emailDomain := email[strings.IndexRune(email, '@')+1:]
+			stats[strings.ToLower(emailDomain)]++
+		}
+	}
+	return stats, nil
+}
+
+func GetDomainStatOld(r io.Reader, domain string) (DomainStat, error) {
 	u, err := getUsers(r)
 	if err != nil {
 		return nil, fmt.Errorf("get users error: %w", err)
