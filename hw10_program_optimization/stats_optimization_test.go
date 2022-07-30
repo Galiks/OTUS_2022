@@ -1,3 +1,4 @@
+//go:build !bench
 // +build !bench
 
 package hw10programoptimization
@@ -37,7 +38,7 @@ func TestGetDomainStat_Time_And_Memory(t *testing.T) {
 		b.StopTimer()
 		require.NoError(t, err)
 
-		require.Equal(t, ExpectedBizStat, stat)
+		require.Equal(t, expectedBizStat, stat)
 	}
 
 	result := testing.Benchmark(bench)
@@ -49,7 +50,7 @@ func TestGetDomainStat_Time_And_Memory(t *testing.T) {
 	require.Less(t, mem, memoryLimit, "the program is too greedy")
 }
 
-var ExpectedBizStat = DomainStat{
+var expectedBizStat = DomainStat{
 	"abata.biz":         25,
 	"abatz.biz":         25,
 	"agimba.biz":        28,
