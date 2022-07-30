@@ -2,10 +2,10 @@ goos: linux
 goarch: amd64
 pkg: github.com/Galiks/OTUS_2022/hw10_program_optimization
 cpu: Intel(R) Core(TM) i5-6400 CPU @ 2.70GHz
-BenchmarkGetDomainStat-4   	       3	 383837700 ns/op	  644205 B/op	   23215 allocs/op
-BenchmarkGetDomainStat-4   	       3	 380857967 ns/op	  644258 B/op	   23216 allocs/op
-BenchmarkGetDomainStat-4   	       3	 388924200 ns/op	  619768 B/op	   23215 allocs/op
-BenchmarkGetDomainStat-4   	       3	 397384933 ns/op	  619565 B/op	   23214 allocs/op
-BenchmarkGetDomainStat-4   	       3	 395297167 ns/op	  631570 B/op	   23213 allocs/op
+BenchmarkGetDomainStat-4   	       3	 403335733 ns/op	  263269 B/op	   12109 allocs/op
+BenchmarkGetDomainStat-4   	       3	 351523933 ns/op	  263765 B/op	   12111 allocs/op
+BenchmarkGetDomainStat-4   	       3	 370362533 ns/op	  263402 B/op	   12110 allocs/op
+BenchmarkGetDomainStat-4   	       3	 373106367 ns/op	  263333 B/op	   12109 allocs/op
+BenchmarkGetDomainStat-4   	       3	 344350100 ns/op	  263408 B/op	   12110 allocs/op
 PASS
-ok  	github.com/Galiks/OTUS_2022/hw10_program_optimization	11.635s
+ok  	github.com/Galiks/OTUS_2022/hw10_program_optimization	11.241s

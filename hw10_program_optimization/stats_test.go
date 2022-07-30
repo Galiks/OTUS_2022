@@ -53,7 +53,7 @@ func TestGetDomainStat(t *testing.T) {
 	})
 }
 
-var isOld = true
+var isOld = false
 
 func BenchmarkGetDomainStat(b *testing.B) {
 	for i := 0; i < b.N; i++ {
