@@ -13,7 +13,7 @@ func Run(conn TelnetClient) error {
 	if err := conn.Connect(); err != nil {
 		return fmt.Errorf("connect error: %w", err)
 	}
-
+	defer conn.Close()
 	log.Println("Connected success")
 
 	signalChan := make(chan os.Signal, 1)
@@ -22,38 +22,34 @@ func Run(conn TelnetClient) error {
 
 	// Send
 	go func() {
-		defer close(done)
 		if err := conn.Send(); err != nil {
 			log.Println("Send error: ", err)
-			return
-		}
-	}()
-
-	// Close
-	go func() {
-		defer conn.Close()
-		select {
-		case <-signalChan:
-			close(done)
-			return
-		case <-done:
+			closeDoneChannel(done)
 			return
 		}
 	}()
 
 	// Receive
 	go func() {
-		defer func() {
-			if _, ok := <-done; ok {
-				close(done)
-			}
-		}()
 		if err := conn.Receive(); err != nil {
 			log.Println("Receive error: ", err)
+			closeDoneChannel(done)
+			return
 		}
 	}()
 
-	<-done
+	for {
+		select {
+		case <-signalChan:
+			return nil
+		case <-done:
+			return nil
+		}
+	}
+}
 
-	return nil
+func closeDoneChannel(done chan struct{}) {
+	if _, ok := <-done; ok {
+		close(done)
+	}
 }
