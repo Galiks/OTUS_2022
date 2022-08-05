@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"net"
+	"os"
 	"sync"
 	"testing"
 	"time"
@@ -61,5 +62,25 @@ func TestTelnetClient(t *testing.T) {
 		}()
 
 		wg.Wait()
+	})
+}
+
+func TestTelnetAddress(t *testing.T) {
+	t.Run("invalid address", func(t *testing.T) {
+		client := NewTelnetClient("text.ru", time.Second*10, os.Stdin, os.Stdout)
+		err := client.Connect()
+		require.NotNil(t, err)
+	})
+
+	t.Run("valid address", func(t *testing.T) {
+		addresses, err := net.LookupIP("github.com")
+		require.Nil(t, err)
+		for _, address := range addresses {
+			client := NewTelnetClient(net.JoinHostPort(address.String(), "80"), time.Second*10, os.Stdin, os.Stdout)
+			err := client.Connect()
+			require.Nil(t, err)
+			err = client.Close()
+			require.Nil(t, err)
+		}
 	})
 }
