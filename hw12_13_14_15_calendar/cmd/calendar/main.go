@@ -3,15 +3,16 @@ package main
 import (
 	"context"
 	"flag"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/app"
-	"github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/logger"
-	internalhttp "github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/server/http"
-	memorystorage "github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/storage/memory"
+	"github.com/Galiks/OTUS_2022/hw12_13_14_15_calendar/internal/app"
+	"github.com/Galiks/OTUS_2022/hw12_13_14_15_calendar/internal/logger"
+	internalhttp "github.com/Galiks/OTUS_2022/hw12_13_14_15_calendar/internal/server/http"
+	memorystorage "github.com/Galiks/OTUS_2022/hw12_13_14_15_calendar/internal/storage/memory"
 )
 
 var configFile string
@@ -28,8 +29,14 @@ func main() {
 		return
 	}
 
-	config := NewConfig()
-	logg := logger.New(config.Logger.Level)
+	config, err := NewConfig(configFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	logg, err := logger.InitLog(config.Logger.Level, config.Logger.PrintStackTrace, config.Logger.PathToFile)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	storage := memorystorage.New()
 	calendar := app.New(logg, storage)
@@ -50,7 +57,6 @@ func main() {
 			logg.Error("failed to stop http server: " + err.Error())
 		}
 	}()
-
 	logg.Info("calendar is running...")
 
 	if err := server.Start(ctx); err != nil {

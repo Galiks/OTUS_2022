@@ -1,5 +1,7 @@
 [logger]
 level = "INFO"
+printStackTrace = false
+pathToFile = "log/calendar.log"
 
 # TODO
 # ...
