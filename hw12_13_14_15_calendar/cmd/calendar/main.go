@@ -33,15 +33,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	logg, err := logger.InitLog(config.Logger.Level, config.Logger.PrintStackTrace, config.Logger.PathToFile)
-	if err != nil {
+	if err := logger.InitLog(config.Logger.Level, config.Logger.PrintStackTrace, config.Logger.PathToFile); err != nil {
 		log.Fatal(err)
 	}
 
 	storage := memorystorage.New()
-	calendar := app.New(logg, storage)
+	calendar := app.New(storage)
 
-	server := internalhttp.NewServer(logg, calendar)
+	server := internalhttp.NewServer(calendar)
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
@@ -54,13 +53,13 @@ func main() {
 		defer cancel()
 
 		if err := server.Stop(ctx); err != nil {
-			logg.Error("failed to stop http server: " + err.Error())
+			logger.Error("failed to stop http server: " + err.Error())
 		}
 	}()
-	logg.Info("calendar is running...")
+	logger.Info("calendar is running...")
 
 	if err := server.Start(ctx); err != nil {
-		logg.Error("failed to start http server: " + err.Error())
+		logger.Error("failed to start http server: " + err.Error())
 		cancel()
 		os.Exit(1) //nolint:gocritic
 	}

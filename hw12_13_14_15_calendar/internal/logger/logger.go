@@ -9,19 +9,18 @@ import (
 )
 
 var (
-	Log           *logger
-	once          sync.Once
-	logStackTrace bool
+	log  *logger
+	once sync.Once
 )
 
 type logger struct {
-	log *zap.Logger
+	zapLog *zap.Logger
 }
 
-func InitLog(level string, isPrintStackTrace bool, logPath string) (*logger, error) {
+func InitLog(level string, isPrintStackTrace bool, logPath string) error {
 	var (
-		err error
-		log *zap.Logger
+		err    error
+		newLog *zap.Logger
 	)
 	once.Do(func() {
 		var zapLevel zapcore.Level
@@ -54,25 +53,24 @@ func InitLog(level string, isPrintStackTrace bool, logPath string) (*logger, err
 			options = append(options, zap.AddStacktrace(zapLevel))
 		}
 		options = append(options, zap.AddCaller())
+		newLog = zap.New(core, options...)
 
-		log = zap.New(core, options...)
-
-		Log = &logger{
-			log: log,
+		log = &logger{
+			zapLog: newLog,
 		}
 	})
 
-	return Log, err
+	return err
 }
 
-func (l logger) Info(msg string) {
-	l.log.Info(msg)
+func Info(msg any) {
+	log.zapLog.Sugar().Info(msg)
 }
 
-func (l logger) Error(msg string) {
-	l.log.Error(msg)
+func Error(msg any) {
+	log.zapLog.Sugar().Error(msg)
 }
 
-func (l logger) Fatal(msg string) {
-	l.log.Fatal(msg)
+func Fatal(msg any) {
+	log.zapLog.Sugar().Fatal(msg)
 }
