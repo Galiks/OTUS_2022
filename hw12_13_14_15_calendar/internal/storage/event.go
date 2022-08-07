@@ -5,11 +5,11 @@ import (
 )
 
 type Event struct {
-	ID          int64
-	Title       string
-	StartEvent  time.Time
-	EndEvent    time.Time
-	Description string
-	UserID      int64
-	EventTime   time.Time
+	ID          int64     `db:"id"`
+	Title       string    `db:"title"`
+	StartEvent  time.Time `db:"start_event"`
+	EndEvent    time.Time `db:"end_event"`
+	Description string    `db:"description"`
+	UserID      int64     `db:"user_id"`
+	EventTime   time.Time `db:"event_time"`
 }

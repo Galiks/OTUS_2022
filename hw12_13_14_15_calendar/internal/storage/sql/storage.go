@@ -13,7 +13,7 @@ type Storage struct {
 }
 
 func New(dataSourceName string) *Storage {
-	db, err := sqlx.Connect("pgx", dataSourceName)
+	db, err := sqlx.Connect("postgres", dataSourceName)
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
@@ -31,21 +31,119 @@ func (s *Storage) Close(ctx context.Context) error {
 }
 
 func (s *Storage) CreateEvent(ctx context.Context, event *storage.Event) error {
-	panic("not implemented") // TODO: Implement
+	query := `
+		INSERT INTO events
+		(
+			id,
+			title,
+			start_event,
+			end_event,
+			description,
+			user_id,
+			event_time,
+		)
+		VALUES
+		(
+			:id,
+			:title,
+			:start_event,
+			:end_event,
+			:description,
+			:user_id,
+			:event_time,
+		) 
+		RETURNING id
+	`
+	row, err := s.db.NamedQueryContext(ctx, query, event)
+	if err != nil {
+		return err
+	}
+	defer row.Close()
+
+	if row.Next() {
+		if err := row.Scan(&event.ID); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s *Storage) UpdateEvent(ctx context.Context, event *storage.Event) error {
-	panic("not implemented") // TODO: Implement
+	query := `
+		UPDATE events
+		SET
+			title=:title,
+			start_event=:start_event,
+			end_event=:end_event,
+			description=:description,
+			user_id=:user_id,
+			event_time=:event_time
+		WHERE id=:id
+	`
+	row, err := s.db.NamedQueryContext(ctx, query, event)
+	if err != nil {
+		return err
+	}
+	if row.Next() {
+		if err := row.Scan(&event.ID); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s *Storage) DeleteEvent(ctx context.Context, id int64) error {
-	panic("not implemented") // TODO: Implement
+	query := `
+		DELETE FROM events
+		WHERE id=$1
+	`
+	if _, err := s.db.NamedQueryContext(ctx, query, id); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *Storage) GetEventsByUserID(ctx context.Context, id int64) ([]*storage.Event, error) {
-	panic("not implemented") // TODO: Implement
+	var result []*storage.Event = make([]*storage.Event, 0)
+	query := `
+		SELECT *
+		FROM events
+		WHERE user_id=$1
+	`
+
+	rows, err := s.db.NamedQueryContext(ctx, query, id)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var event storage.Event
+		if err := rows.Scan(&event); err != nil {
+			return nil, err
+		}
+		result = append(result, &event)
+	}
+
+	return result, nil
 }
 
 func (s *Storage) GetEventByID(ctx context.Context, id int64) (*storage.Event, error) {
-	panic("not implemented") // TODO: Implement
+	query := `
+		SELECT *
+		FROM events
+		WHERE id=$1
+	`
+
+	row, err := s.db.NamedQueryContext(ctx, query, id)
+	if err != nil {
+		return nil, err
+	}
+	if row.Next() {
+		var event storage.Event
+		if err := row.Scan(&event); err != nil {
+			return nil, err
+		}
+		return &event, nil
+	}
+	return nil, storage.ErrUnknownEvent
 }
