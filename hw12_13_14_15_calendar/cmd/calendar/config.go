@@ -8,15 +8,24 @@ import (
 // Организация конфига в main принуждает нас сужать API компонентов, использовать
 // при их конструировании только необходимые параметры, а также уменьшает вероятность циклической зависимости.
 type Config struct {
-	Logger LoggerConf
-	// TODO
+	Logger     LoggerConf
+	PostgreSQL PostgresConf
+	Server     ServerConf
+}
+
+type ServerConf struct {
+	Host string
+	Port string
+}
+
+type PostgresConf struct {
+	ConnectString string
 }
 
 type LoggerConf struct {
 	Level           string
 	PrintStackTrace bool
 	PathToFile      string
-	// TODO
 }
 
 func NewConfig(path string) (*Config, error) {
@@ -38,5 +47,3 @@ func NewConfig(path string) (*Config, error) {
 
 	return conf, nil
 }
-
-// TODO

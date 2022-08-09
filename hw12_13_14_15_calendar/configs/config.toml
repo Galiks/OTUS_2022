@@ -1,7 +1,11 @@
 [logger]
 level = "INFO"
 printStackTrace = false
-pathToFile = "log/calendar.log"
+#pathToFile = "log/calendar.log"
 
-# TODO
-# ...
+[postgreSQL]
+connectString = "postgres://postgres:admin@localhost:5432"
+
+[server]
+host = "localhost"
+port = "8080"

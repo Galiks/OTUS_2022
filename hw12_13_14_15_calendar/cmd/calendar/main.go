@@ -12,7 +12,9 @@ import (
 	"github.com/Galiks/OTUS_2022/hw12_13_14_15_calendar/internal/app"
 	"github.com/Galiks/OTUS_2022/hw12_13_14_15_calendar/internal/logger"
 	internalhttp "github.com/Galiks/OTUS_2022/hw12_13_14_15_calendar/internal/server/http"
-	memorystorage "github.com/Galiks/OTUS_2022/hw12_13_14_15_calendar/internal/storage/memory"
+
+	// memorystorage "github.com/Galiks/OTUS_2022/hw12_13_14_15_calendar/internal/storage/memory"
+	sqlstorage "github.com/Galiks/OTUS_2022/hw12_13_14_15_calendar/internal/storage/sql"
 )
 
 var configFile string
@@ -36,11 +38,13 @@ func main() {
 	if err := logger.InitLog(config.Logger.Level, config.Logger.PrintStackTrace, config.Logger.PathToFile); err != nil {
 		log.Fatal(err)
 	}
-
-	storage := memorystorage.New()
+	storage := sqlstorage.New(config.PostgreSQL.ConnectString)
+	if err := storage.Connect(context.Background()); err != nil {
+		logger.Fatal(err)
+	}
 	calendar := app.New(storage)
 
-	server := internalhttp.NewServer(calendar)
+	server := internalhttp.NewServer(calendar, config.Server.Host, config.Server.Port)
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
@@ -56,9 +60,8 @@ func main() {
 			logger.Error("failed to stop http server: " + err.Error())
 		}
 	}()
-	logger.Info("calendar is running...")
 
-	if err := server.Start(ctx); err != nil {
+	if err := server.Start(); err != nil {
 		logger.Error("failed to start http server: " + err.Error())
 		cancel()
 		os.Exit(1) //nolint:gocritic

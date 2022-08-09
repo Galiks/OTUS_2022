@@ -2,9 +2,11 @@ package sqlstorage
 
 import (
 	"context"
+	"log"
 
 	"github.com/Galiks/OTUS_2022/hw12_13_14_15_calendar/internal/logger"
 	"github.com/Galiks/OTUS_2022/hw12_13_14_15_calendar/internal/storage"
+	_ "github.com/jackc/pgx/stdlib" //nolint
 	"github.com/jmoiron/sqlx"
 )
 
@@ -13,9 +15,10 @@ type Storage struct {
 }
 
 func New(dataSourceName string) *Storage {
-	db, err := sqlx.Connect("postgres", dataSourceName)
+	db, err := sqlx.Connect("pgx", dataSourceName)
 	if err != nil {
-		logger.Fatal(err.Error())
+		log.Fatal(err)
+		logger.Fatal(err)
 	}
 	return &Storage{
 		db: db,
@@ -34,7 +37,6 @@ func (s *Storage) CreateEvent(ctx context.Context, event *storage.Event) error {
 	query := `
 		INSERT INTO events
 		(
-			id,
 			title,
 			start_event,
 			end_event,
@@ -44,7 +46,6 @@ func (s *Storage) CreateEvent(ctx context.Context, event *storage.Event) error {
 		)
 		VALUES
 		(
-			:id,
 			:title,
 			:start_event,
 			:end_event,

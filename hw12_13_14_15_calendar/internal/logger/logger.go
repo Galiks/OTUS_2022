@@ -43,6 +43,8 @@ func InitLog(level string, isPrintStackTrace bool, logPath string) error {
 				return
 			}
 			writer = zapcore.AddSync(logFile)
+		} else {
+			writer = zapcore.AddSync(os.Stdout)
 		}
 
 		core := zapcore.NewTee(
@@ -63,14 +65,15 @@ func InitLog(level string, isPrintStackTrace bool, logPath string) error {
 	return err
 }
 
-func Info(msg any) {
+func Info(msg ...any) {
 	log.zapLog.Sugar().Info(msg)
 }
 
-func Error(msg any) {
+func Error(msg ...any) {
 	log.zapLog.Sugar().Error(msg)
 }
 
-func Fatal(msg any) {
+func Fatal(msg ...any) {
+
 	log.zapLog.Sugar().Fatal(msg)
 }
